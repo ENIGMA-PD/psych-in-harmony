@@ -442,8 +442,13 @@
         // Load actual data from uploaded file
         async function loadSurveyData() {
             try {
-                const csvData = await window.fs.readFile('../code/similarity-analysis/similarity-analysis-input_without-sleep.csv', { encoding: 'utf8' });
-                
+                const response = await fetch('../code/similarity-analysis/similarity-analysis-input_without-sleep.csv');
+        
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+        
+                const csvData = await response.text();
                 // Use Papa Parse (should be available in the environment)
                 const Papa = (await import('https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js')).default;
                 
