@@ -417,70 +417,56 @@
     </div>
 
     <script>
-        // Survey data structure
-        const surveyData = {
-            depression: {
-                items: [
-                    {id: "BDI_01", text: "I feel sad", categories: ["depressed mood", "feelings of worthlessness or guilt", "anhedonia", "suicidal thoughts", "troubles thinking and decision making", "fatigue", "sleep troubles", "change in appetite or weight", "psychomotor retardation or agitation"]},
-                    {id: "BDI_02", text: "I feel discouraged about the future.", categories: ["depressed mood", "feelings of worthlessness or guilt", "anhedonia", "suicidal thoughts", "troubles thinking and decision making", "fatigue", "sleep troubles", "change in appetite or weight", "psychomotor retardation or agitation"]},
-                    {id: "BDI_03", text: "I feel I have failed more than the average person.", categories: ["depressed mood", "feelings of worthlessness or guilt", "anhedonia", "suicidal thoughts", "troubles thinking and decision making", "fatigue", "sleep troubles", "change in appetite or weight", "psychomotor retardation or agitation"]},
-                    // More items will be loaded from the actual data
-                ],
-                categories: ["depressed mood", "feelings of worthlessness or guilt", "anhedonia", "suicidal thoughts", "troubles thinking and decision making", "fatigue", "sleep troubles", "change in appetite or weight", "psychomotor retardation or agitation"]
-            },
-            anxiety: {
-                categories: ["tension", "anxious mood", "restlessness", "fear", "insomnia", "cognitive symptoms", "depressive symptoms", "somatic symptoms"]
-            },
-            psychosis: {
-                categories: ["hallucinations", "delusions", "altered sleep", "formal thought disorder", "sexual preoccupation", "compulsion"]
-            },
-            apathy: {
-                categories: ["cognitive apathy", "behavioral apathy", "other apathy", "emotional apathy", "social apathy"]
-            }
-        };
+        // Survey data structure - will be populated from CSV
+        let surveyData = {};
         
         // Load actual data from uploaded file
         async function loadSurveyData() {
             try {
+                console.log('Loading CSV data...');
                 const response = await fetch('https://raw.githubusercontent.com/ENIGMA-PD/psych-in-harmony/main/code/similarity-analysis/similarity-analysis-input_without-sleep.csv');
-        
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-        
+
                 const csvData = await response.text();
-                // Use Papa Parse (should be available in the environment)
+                console.log('CSV data loaded, first 200 characters:', csvData.substring(0, 200));
+        
+                // Import Papa Parse
                 const Papa = (await import('https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js')).default;
-                
+        
                 const parsed = Papa.parse(csvData, {
                     header: true,
                     skipEmptyLines: true
                 });
-                
+        
+                console.log('Parsed data:', parsed.data.length, 'rows');
+        
                 // Organize data by construct
                 const organizedData = {};
-                
+        
                 parsed.data.forEach(row => {
                     const construct = row.construct;
                     if (!construct) return;
-                    
+            
                     if (!organizedData[construct]) {
                         organizedData[construct] = {
                             items: [],
                             categories: new Set()
                         };
                     }
-                    
+            
                     organizedData[construct].items.push({
                         id: row.question_number,
                         text: row.question_text,
                         questionnaire: row.questionnaire_name,
                         originalCategory: row.construct_category
                     });
-                    
+            
                     organizedData[construct].categories.add(row.construct_category);
                 });
-                
+        
                 // Convert sets to arrays and update surveyData
                 Object.keys(organizedData).forEach(construct => {
                     surveyData[construct] = {
@@ -488,13 +474,20 @@
                         categories: Array.from(organizedData[construct].categories)
                     };
                 });
-                
-                console.log('Survey data loaded successfully:', surveyData);
+        
+                console.log('Survey data organized:', Object.keys(surveyData));
+                console.log('Items per construct:', Object.keys(surveyData).map(c => `${c}: ${surveyData[c].items?.length || 0}`));
+        
                 initializeSurvey();
             } catch (error) {
                 console.error('Error loading survey data:', error);
-                // Fallback to demo data if file loading fails
-                initializeSurvey();
+        
+                // Show error message to user
+                document.querySelector('.header h1').textContent = 'Error Loading Survey Data';
+                document.querySelector('.header p').textContent = 'Failed to load survey items. Please refresh the page or contact support.';
+        
+                // Don't initialize with empty data
+                return;
             }
         }
         
