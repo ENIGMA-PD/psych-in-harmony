@@ -165,12 +165,6 @@
             padding-left: 15px !important;
         }
         
-        .item-id {
-            font-size: 11px;
-            color: #6c757d;
-            margin-bottom: 5px;
-        }
-        
         .confidence-column {
             background-color: #f0f8f0;
             border-left: 3px solid #8BC34A;
@@ -262,6 +256,13 @@
             background: #218838;
         }
         
+        .loading-message {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+        
         @media (max-width: 768px) {
             .items-table {
                 font-size: 12px;
@@ -291,15 +292,23 @@
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
             </div>
-            <div id="progressText">0 of 220 items completed</div>
+            <div id="progressText">Loading survey data...</div>
         </div>
         
         <div class="construct-navigation" id="constructTabs">
             <!-- Tabs will be generated here -->
         </div>
         
+        <!-- Loading Page -->
+        <div class="construct-page active" id="loadingPage">
+            <div class="loading-message">
+                <h2>Loading Survey Data...</h2>
+                <p>Please wait while we load the questionnaire items.</p>
+            </div>
+        </div>
+        
         <!-- Welcome Page -->
-        <div class="construct-page active" id="welcomePage">
+        <div class="construct-page" id="welcomePage">
             <div class="construct-header">
                 <h2 class="construct-title">Hello!</h2>
             </div>
@@ -417,10 +426,14 @@
     </div>
 
     <script>
-        // Survey data structure - will be populated from CSV
+        // Global variables
         let surveyData = {};
+        let constructs = [];
+        let currentConstruct = -2; // Start at loading page (-3 = loading, -2 = welcome, -1 = instructions, 0+ = constructs)
+        let responses = {};
+        let feedback = {};
         
-        // Load actual data from uploaded file
+        // Load actual data from CSV file
         async function loadSurveyData() {
             try {
                 console.log('Loading CSV data...');
@@ -474,27 +487,39 @@
                         categories: Array.from(organizedData[construct].categories)
                     };
                 });
+                
+                // NOW update constructs array after data is loaded
+                constructs = Object.keys(surveyData);
         
-                console.log('Survey data organized:', Object.keys(surveyData));
-                console.log('Items per construct:', Object.keys(surveyData).map(c => `${c}: ${surveyData[c].items?.length || 0}`));
+                console.log('Survey data organized:', constructs);
+                console.log('Items per construct:', constructs.map(c => `${c}: ${surveyData[c].items?.length || 0}`));
         
+                // Initialize survey after data is loaded
                 initializeSurvey();
+                
+                // Hide loading page and show welcome page
+                document.getElementById('loadingPage').classList.remove('active');
+                document.getElementById('welcomePage').classList.add('active');
+                currentConstruct = -2;
+                
             } catch (error) {
                 console.error('Error loading survey data:', error);
         
                 // Show error message to user
                 document.querySelector('.header h1').textContent = 'Error Loading Survey Data';
                 document.querySelector('.header p').textContent = 'Failed to load survey items. Please refresh the page or contact support.';
-        
-                // Don't initialize with empty data
-                return;
+                document.getElementById('progressText').textContent = 'Error loading data';
+                
+                // Hide loading page and show error
+                document.getElementById('loadingPage').innerHTML = `
+                    <div class="loading-message">
+                        <h2 style="color: #dc3545;">❌ Error Loading Survey</h2>
+                        <p>Could not load survey data. Please check your internet connection and refresh the page.</p>
+                        <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 20px;">🔄 Retry</button>
+                    </div>
+                `;
             }
         }
-        
-        let currentConstruct = -2; // Start at welcome page (-2 = welcome, -1 = instructions, 0+ = constructs)
-        let responses = {};
-        let feedback = {}; // Store feedback for each construct
-        const constructs = Object.keys(surveyData);
         
         function showInstructions() {
             document.getElementById('welcomePage').classList.remove('active');
@@ -511,7 +536,6 @@
         function initializeSurvey() {
             createTabs();
             createPages();
-            // Don't show any construct initially - start with welcome
             updateProgress();
         }
         
@@ -642,6 +666,7 @@
             // Hide welcome and instructions pages
             document.getElementById('welcomePage').classList.remove('active');
             document.getElementById('instructionsPage').classList.remove('active');
+            document.getElementById('loadingPage').classList.remove('active');
             
             // Hide all construct pages
             document.querySelectorAll('#constructPages .construct-page').forEach(page => {
@@ -676,6 +701,8 @@
         }
         
         function checkConstructCompletion() {
+            if (currentConstruct < 0 || !constructs[currentConstruct]) return;
+            
             const construct = constructs[currentConstruct];
             const data = surveyData[construct];
             
@@ -861,7 +888,7 @@
         }
         
         // Google Sheets configuration
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwcgG1dlgUZh0iJ9tCTjgTG6pej9ATju14Gc0f8TWc5qqsilxlmzbAMQ6qkF03adWdkQ/exec'; // Replace with your deployed script URL
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwcgG1dlgUZh0iJ9tCTjgTG6pej9ATju14Gc0f8TWc5qqsilxlmzbAMQ6qkF03adWdkQ/exec';
         
         async function submitToGoogleSheets() {
             const professionalBackground = getProfessionalBackground();
