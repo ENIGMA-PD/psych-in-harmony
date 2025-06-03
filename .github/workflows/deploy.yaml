@@ -40,8 +40,8 @@ jobs:
       run: |
         if [ -f "code/similarity-analysis/similarity-analysis-input_without-sleep.csv" ]; then
           echo "✅ CSV file found"
-          echo "File size: $(wc -c < survey/questionnaire_modelevaluationinput_Sheet1.csv) bytes"
-          echo "Number of lines: $(wc -l < survey/questionnaire_modelevaluationinput_Sheet1.csv)"
+          echo "File size: $(wc -c < code/similarity-analysis/similarity-analysis-input_without-sleep.csv) bytes"
+          echo "Number of lines: $(wc -l < code/similarity-analysis/similarity-analysis-input_without-sleep.csv)"
         else
           echo "❌ CSV file not found in survey/ folder!"
           exit 1
