@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construct Item Mapping Survey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #8BC34A, #7CB342);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .progress-bar {
+            background: white;
+            border-radius: 25px;
+            padding: 4px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #8BC34A, #7CB342);
+            height: 12px;
+            border-radius: 25px;
+            transition: width 0.3s ease;
+        }
+        
+        .construct-navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .construct-tab {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .construct-tab.active {
+            background: #8BC34A;
+            color: white;
+            border-color: #8BC34A;
+        }
+        
+        .construct-tab.completed {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        .construct-page {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .construct-page.active {
+            display: block;
+        }
+        
+        .construct-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .construct-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+            text-transform: capitalize;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table-header {
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .table-header th {
+            padding: 15px 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #495057;
+            font-size: 12px;
+            border-right: 1px solid #dee2e6;
+        }
+        
+        .table-header th:first-child {
+            text-align: left;
+            width: 300px;
+        }
+        
+        .confidence-header {
+            background: #8BC34A;
+            color: white;
+            border-left: 3px solid #7CB342 !important;
+        }
+        
+        .item-row {
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.2s ease;
+        }
+        
+        .item-row:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .item-row td {
+            padding: 15px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .item-text {
+            text-align: left !important;
+            background-color: #f8f9fa;
+            font-weight: 500;
+            color: #333;
+            border-right: 2px solid #dee2e6;
+            padding-left: 15px !important;
+        }
+        
+        .item-id {
+            font-size: 11px;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .confidence-column {
+            background-color: #f0f8f0;
+            border-left: 3px solid #8BC34A;
+        }
+        
+        input[type="radio"] {
+            transform: scale(1.3);
+            cursor: pointer;
+        }
+        
+        input[type="radio"]:checked {
+            accent-color: #8BC34A;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            gap: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #8BC34A;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #7CB342;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .completion-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .download-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .download-btn {
+            background: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            background: #218838;
+        }
+        
+        @media (max-width: 768px) {
+            .items-table {
+                font-size: 12px;
+            }
+            
+            .table-header th {
+                padding: 8px 4px;
+                font-size: 10px;
+            }
+            
+            .item-row td {
+                padding: 10px 4px;
+            }
+            
+            .construct-navigation {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Construct Item Mapping Survey</h1>
+            <p>Please assign the following items from various questionnaires to the disorder dimension you think they belong to and judge the confidence of your choice.</p>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+            </div>
+            <div id="progressText">0 of 220 items completed</div>
+        </div>
+        
+        <div class="construct-navigation" id="constructTabs">
+            <!-- Tabs will be generated here -->
+        </div>
+        
+        <!-- Welcome Page -->
+        <div class="construct-page active" id="welcomePage">
+            <div class="construct-header">
+                <h2 class="construct-title">Hello!</h2>
+            </div>
+            <div style="padding: 30px; line-height: 1.8; font-size: 16px;">
+                <p><strong>Dear expert,</strong></p>
+                <p>with this form we would like to collect your expert opinion on items of mental health questionnaires. For our ENIGMA-PD project on neuropsychiatric symptoms in PD, we need to harmonize multiple mental health questionnaires since not all sites administered the same questionnaires. Once we selected the overlapping dimensions, we can transform the scores and achieve greater harmonization. We believe that by mapping single items to a common construct dimension we can achieve more reliable results and increase power of the brain morphology analysis. Additionally, we hope to create a more general questionnaire harmonization protocol for others to reuse for their own large scale multi-sited study.</p>
+                <p>We highly appreciate your input.</p>
+                <p><strong>Thank you!</strong></p>
+                <div style="text-align: center; margin-top: 40px;">
+                    <button class="btn btn-primary" onclick="showInstructions()" style="font-size: 18px; padding: 15px 30px;">Continue</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instructions Page -->
+        <div class="construct-page" id="instructionsPage">
+            <div class="construct-header">
+                <h2 class="construct-title">Instructions</h2>
+            </div>
+            <div style="padding: 30px; line-height: 1.8; font-size: 16px;">
+                <p>On the following pages you will be presented by items from multiple mental health questionnaires. The items are pre-sorted by mental health construct (e.g., depression, anxiety, psychosis etc.). We also pre-selected construct dimensions based on clinical criteria and/or the theoretical basis of the questionnaires (e.g., for depression you will find dimensions like depressed mood, anhedonia, feelings of guilt etc.).</p>
+                <p>Your task will be to <strong>select the radio button</strong> for the dimension you think each item belongs to, and rate your confidence in that choice on a scale from 0 (not confident) to 4 (very confident).</p>
+                <p>Please make sure to go through all constructs by clicking on "Next" at the end of each page until you reach the End screen of this form.</p>
+                <p><strong>Thank you!</strong></p>
+                <div style="text-align: center; margin-top: 40px;">
+                    <button class="btn btn-primary" onclick="startSurvey()" style="font-size: 18px; padding: 15px 30px;">Start Survey</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="constructPages">
+            <!-- Pages will be generated here -->
+        </div>
+        
+        <div class="navigation-buttons" id="navigationButtons" style="display: none;">
+            <button class="btn btn-secondary" id="prevBtn" onclick="previousConstruct()">← Previous</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextConstruct()">Next →</button>
+        </div>
+        
+        <div class="download-section" id="downloadSection" style="display: none;">
+            <div class="completion-message">
+                <h2>🎉 Survey Completed!</h2>
+                <p>Thank you for completing all construct mappings. Please provide some information about your professional background before downloading your responses.</p>
+            </div>
+            
+            <!-- Professional Background Form -->
+            <div style="background: #f8f9fa; padding: 30px; border-radius: 12px; margin: 20px 0; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+                <h3 style="margin-bottom: 20px; color: #333; text-align: center;">Professional Background</h3>
+                
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 15px; color: #555;">What is your professional background?</label>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <input type="radio" id="psychiatrist" name="profession" value="Psychiatrist" style="margin-right: 8px;">
+                        <label for="psychiatrist">Psychiatrist</label>
+                    </div>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <input type="radio" id="psychotherapist" name="profession" value="Psychotherapist" style="margin-right: 8px;">
+                        <label for="psychotherapist">Psychotherapist</label>
+                    </div>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <input type="radio" id="clinical-psychologist" name="profession" value="Clinical Psychologist" style="margin-right: 8px;">
+                        <label for="clinical-psychologist">Clinical Psychologist</label>
+                    </div>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <input type="radio" id="psychologist-other" name="profession" value="Psychologist, other fields" style="margin-right: 8px;">
+                        <label for="psychologist-other">Psychologist, other fields</label>
+                    </div>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <input type="radio" id="neurologist" name="profession" value="Neurologist" style="margin-right: 8px;">
+                        <label for="neurologist">Neurologist</label>
+                    </div>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <input type="radio" id="neuroscientist" name="profession" value="Neuroscientist" style="margin-right: 8px;">
+                        <label for="neuroscientist">Neuroscientist</label>
+                    </div>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <input type="radio" id="mental-health-other" name="profession" value="Other mental health professional" style="margin-right: 8px;" onchange="toggleSpecifyField('mental-health-specify', this.checked)">
+                        <label for="mental-health-other">Other mental health professional:</label>
+                        <input type="text" id="mental-health-specify" placeholder="please specify" style="margin-left: 10px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; width: 200px;" disabled>
+                    </div>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <input type="radio" id="other" name="profession" value="Other" style="margin-right: 8px;" onchange="toggleSpecifyField('other-specify', this.checked)">
+                        <label for="other">Other:</label>
+                        <input type="text" id="other-specify" placeholder="free text option" style="margin-left: 10px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; width: 200px;" disabled>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 25px;">
+                    <label for="experience-years" style="display: block; font-weight: 600; margin-bottom: 10px; color: #555;">How many years is your professional experience?</label>
+                    <input type="number" id="experience-years" min="0" max="60" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100px; font-size: 16px;">
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <p style="margin: 20px 0; color: #666; font-size: 14px;">
+                    Your responses will be automatically submitted. Download buttons below are for your records.
+                </p>
+                <button class="download-btn" onclick="submitDataAndDownload()" id="submitBtn" disabled style="background: #ccc; font-size: 18px; padding: 15px 30px;">
+                    📤 Submit & Download Results
+                </button>
+                <div style="margin-top: 15px;">
+                    <button class="download-btn" onclick="downloadCSV()" id="downloadCsvBtn" disabled style="background: #6c757d; font-size: 14px; padding: 10px 20px;">📊 Download CSV Only</button>
+                    <button class="download-btn" onclick="downloadJSON()" id="downloadJsonBtn" disabled style="background: #6c757d; font-size: 14px; padding: 10px 20px;">📋 Download JSON Only</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Survey data structure
+        const surveyData = {
+            depression: {
+                items: [
+                    {id: "BDI_01", text: "I feel sad", categories: ["depressed mood", "feelings of worthlessness or guilt", "anhedonia", "suicidal thoughts", "troubles thinking and decision making", "fatigue", "sleep troubles", "change in appetite or weight", "psychomotor retardation or agitation"]},
+                    {id: "BDI_02", text: "I feel discouraged about the future.", categories: ["depressed mood", "feelings of worthlessness or guilt", "anhedonia", "suicidal thoughts", "troubles thinking and decision making", "fatigue", "sleep troubles", "change in appetite or weight", "psychomotor retardation or agitation"]},
+                    {id: "BDI_03", text: "I feel I have failed more than the average person.", categories: ["depressed mood", "feelings of worthlessness or guilt", "anhedonia", "suicidal thoughts", "troubles thinking and decision making", "fatigue", "sleep troubles", "change in appetite or weight", "psychomotor retardation or agitation"]},
+                    // More items will be loaded from the actual data
+                ],
+                categories: ["depressed mood", "feelings of worthlessness or guilt", "anhedonia", "suicidal thoughts", "troubles thinking and decision making", "fatigue", "sleep troubles", "change in appetite or weight", "psychomotor retardation or agitation"]
+            },
+            anxiety: {
+                categories: ["tension", "anxious mood", "restlessness", "fear", "insomnia", "cognitive symptoms", "depressive symptoms", "somatic symptoms"]
+            },
+            psychosis: {
+                categories: ["hallucinations", "delusions", "altered sleep", "formal thought disorder", "sexual preoccupation", "compulsion"]
+            },
+            apathy: {
+                categories: ["cognitive apathy", "behavioral apathy", "other apathy", "emotional apathy", "social apathy"]
+            }
+        };
+        
+        // Load actual data from uploaded file
+        async function loadSurveyData() {
+            try {
+                const csvData = await window.fs.readFile('../code/similarity-analysis/similarity-analysis-input_without-sleep.csv', { encoding: 'utf8' });
+                
+                // Use Papa Parse (should be available in the environment)
+                const Papa = (await import('https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js')).default;
+                
+                const parsed = Papa.parse(csvData, {
+                    header: true,
+                    skipEmptyLines: true
+                });
+                
+                // Organize data by construct
+                const organizedData = {};
+                
+                parsed.data.forEach(row => {
+                    const construct = row.construct;
+                    if (!construct) return;
+                    
+                    if (!organizedData[construct]) {
+                        organizedData[construct] = {
+                            items: [],
+                            categories: new Set()
+                        };
+                    }
+                    
+                    organizedData[construct].items.push({
+                        id: row.question_number,
+                        text: row.question_text,
+                        questionnaire: row.questionnaire_name,
+                        originalCategory: row.construct_category
+                    });
+                    
+                    organizedData[construct].categories.add(row.construct_category);
+                });
+                
+                // Convert sets to arrays and update surveyData
+                Object.keys(organizedData).forEach(construct => {
+                    surveyData[construct] = {
+                        items: organizedData[construct].items,
+                        categories: Array.from(organizedData[construct].categories)
+                    };
+                });
+                
+                console.log('Survey data loaded successfully:', surveyData);
+                initializeSurvey();
+            } catch (error) {
+                console.error('Error loading survey data:', error);
+                // Fallback to demo data if file loading fails
+                initializeSurvey();
+            }
+        }
+        
+        let currentConstruct = -2; // Start at welcome page (-2 = welcome, -1 = instructions, 0+ = constructs)
+        let responses = {};
+        let feedback = {}; // Store feedback for each construct
+        const constructs = Object.keys(surveyData);
+        
+        function showInstructions() {
+            document.getElementById('welcomePage').classList.remove('active');
+            document.getElementById('instructionsPage').classList.add('active');
+            currentConstruct = -1;
+        }
+        
+        function startSurvey() {
+            document.getElementById('instructionsPage').classList.remove('active');
+            document.getElementById('navigationButtons').style.display = 'flex';
+            showConstruct(0);
+        }
+        
+        function initializeSurvey() {
+            createTabs();
+            createPages();
+            // Don't show any construct initially - start with welcome
+            updateProgress();
+        }
+        
+        function createTabs() {
+            const tabContainer = document.getElementById('constructTabs');
+            tabContainer.innerHTML = '';
+            
+            constructs.forEach((construct, index) => {
+                const tab = document.createElement('div');
+                tab.className = 'construct-tab';
+                tab.textContent = construct.charAt(0).toUpperCase() + construct.slice(1);
+                tab.onclick = () => showConstruct(index);
+                tab.id = `tab-${index}`;
+                tabContainer.appendChild(tab);
+            });
+        }
+        
+        function createPages() {
+            const pageContainer = document.getElementById('constructPages');
+            pageContainer.innerHTML = '';
+            
+            constructs.forEach((construct, constructIndex) => {
+                const page = document.createElement('div');
+                page.className = 'construct-page';
+                page.id = `page-${constructIndex}`;
+                
+                const data = surveyData[construct];
+                if (!data || !data.items) {
+                    page.innerHTML = `<div class="construct-header"><h2>No data available for ${construct}</h2></div>`;
+                    pageContainer.appendChild(page);
+                    return;
+                }
+                
+                let tableHTML = `
+                    <div class="construct-header">
+                        <h2 class="construct-title">${construct}</h2>
+                        <p>Items: ${data.items.length} | Categories: ${data.categories.length}</p>
+                    </div>
+                    <table class="items-table">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Item</th>
+                `;
+                
+                // Add category columns
+                data.categories.forEach(category => {
+                    tableHTML += `<th>${category}</th>`;
+                });
+                
+                // Add confidence columns
+                tableHTML += `
+                                <th class="confidence-header" colspan="5">Confidence</th>
+                            </tr>
+                            <tr>
+                                <th></th>
+                `;
+                
+                // Add empty cells for categories
+                data.categories.forEach(category => {
+                    tableHTML += `<th></th>`;
+                });
+                
+                // Add confidence scale numbers
+                tableHTML += `
+                                <th class="confidence-header">0</th>
+                                <th class="confidence-header">1</th>
+                                <th class="confidence-header">2</th>
+                                <th class="confidence-header">3</th>
+                                <th class="confidence-header">4</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                // Add item rows
+                data.items.forEach((item, itemIndex) => {
+                    const itemId = `${construct}_${itemIndex}`;
+                    tableHTML += `
+                        <tr class="item-row">
+                            <td class="item-text">
+                                ${item.text}
+                            </td>
+                    `;
+                    
+                    // Category radio buttons
+                    data.categories.forEach((category, catIndex) => {
+                        tableHTML += `
+                            <td>
+                                <input type="radio" name="category_${itemId}" value="${category}" 
+                                       onchange="updateResponse('${itemId}', 'category', '${category}')">
+                            </td>
+                        `;
+                    });
+                    
+                    // Confidence radio buttons
+                    for (let conf = 0; conf <= 4; conf++) {
+                        tableHTML += `
+                            <td class="confidence-column">
+                                <input type="radio" name="confidence_${itemId}" value="${conf}"
+                                       onchange="updateResponse('${itemId}', 'confidence', ${conf})">
+                            </td>
+                        `;
+                    }
+                    
+                    tableHTML += '</tr>';
+                });
+                
+                tableHTML += '</tbody></table>';
+                
+                // Add feedback section
+                tableHTML += `
+                    <div style="background: #f8f9fa; border-top: 3px solid #8BC34A; padding: 25px; margin-top: 30px;">
+                        <h4 style="color: #333; margin-bottom: 15px; font-size: 16px;">💬 Optional Feedback</h4>
+                        <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Do you want to provide some feedback on this section? This could be anything, such as thoughts on the dimensions or additional considerations for us to take into account.</p>
+                        <textarea id="feedback_${construct}" 
+                                  placeholder="Share your thoughts about the ${construct} construct dimensions, items, or any other considerations..."
+                                  style="width: 100%; min-height: 100px; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 14px; resize: vertical;"
+                                  oninput="saveFeedback('${construct}', this.value)"></textarea>
+                    </div>
+                `;
+                
+                page.innerHTML = tableHTML;
+                pageContainer.appendChild(page);
+            });
+        }
+        
+        function showConstruct(index) {
+            // Hide welcome and instructions pages
+            document.getElementById('welcomePage').classList.remove('active');
+            document.getElementById('instructionsPage').classList.remove('active');
+            
+            // Hide all construct pages
+            document.querySelectorAll('#constructPages .construct-page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.construct-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected page and tab
+            document.getElementById(`page-${index}`).classList.add('active');
+            document.getElementById(`tab-${index}`).classList.add('active');
+            
+            currentConstruct = index;
+            updateNavigationButtons();
+            updateProgress();
+        }
+        
+        function updateResponse(itemId, type, value) {
+            if (!responses[itemId]) {
+                responses[itemId] = {};
+            }
+            responses[itemId][type] = value;
+            updateProgress();
+            checkConstructCompletion();
+        }
+        
+        function saveFeedback(construct, feedbackText) {
+            feedback[construct] = feedbackText;
+        }
+        
+        function checkConstructCompletion() {
+            const construct = constructs[currentConstruct];
+            const data = surveyData[construct];
+            
+            if (!data || !data.items) return;
+            
+            let allComplete = true;
+            data.items.forEach((item, index) => {
+                const itemId = `${construct}_${index}`;
+                if (!responses[itemId] || !responses[itemId].category || responses[itemId].confidence === undefined) {
+                    allComplete = false;
+                }
+            });
+            
+            if (allComplete) {
+                document.getElementById(`tab-${currentConstruct}`).classList.add('completed');
+            }
+        }
+        
+        function updateProgress() {
+            let totalItems = 0;
+            let completedItems = 0;
+            
+            constructs.forEach((construct, constructIndex) => {
+                const data = surveyData[construct];
+                if (!data || !data.items) return;
+                
+                data.items.forEach((item, itemIndex) => {
+                    totalItems++;
+                    const itemId = `${construct}_${itemIndex}`;
+                    if (responses[itemId] && responses[itemId].category && responses[itemId].confidence !== undefined) {
+                        completedItems++;
+                    }
+                });
+            });
+            
+            const percentage = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = `${completedItems} of ${totalItems} items completed`;
+            
+            // Show download section if all completed
+            if (completedItems === totalItems && totalItems > 0) {
+                document.getElementById('downloadSection').style.display = 'block';
+            }
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentConstruct === 0;
+            nextBtn.disabled = currentConstruct === constructs.length - 1;
+            
+            // Update button text for last page
+            if (currentConstruct === constructs.length - 1) {
+                nextBtn.textContent = 'Finish Survey';
+                nextBtn.onclick = () => finishSurvey();
+            } else {
+                nextBtn.textContent = 'Next →';
+                nextBtn.onclick = () => nextConstruct();
+            }
+        }
+        
+        function finishSurvey() {
+            // Hide navigation and show download section
+            document.getElementById('navigationButtons').style.display = 'none';
+            document.querySelectorAll('#constructPages .construct-page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.querySelectorAll('.construct-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById('downloadSection').style.display = 'block';
+            
+            // Add event listeners for professional background form
+            setupProfessionalBackgroundListeners();
+        }
+        
+        function setupProfessionalBackgroundListeners() {
+            // Listen for profession selection changes
+            document.querySelectorAll('input[name="profession"]').forEach(radio => {
+                radio.addEventListener('change', checkFormCompletion);
+            });
+            
+            // Listen for experience years input
+            document.getElementById('experience-years').addEventListener('input', checkFormCompletion);
+            
+            // Listen for text field changes
+            document.getElementById('mental-health-specify').addEventListener('input', checkFormCompletion);
+            document.getElementById('other-specify').addEventListener('input', checkFormCompletion);
+        }
+        
+        function toggleSpecifyField(fieldId, isEnabled) {
+            const field = document.getElementById(fieldId);
+            field.disabled = !isEnabled;
+            if (!isEnabled) {
+                field.value = '';
+            }
+            checkFormCompletion();
+        }
+        
+        function checkFormCompletion() {
+            const selectedProfession = document.querySelector('input[name="profession"]:checked');
+            const experienceYears = document.getElementById('experience-years').value;
+            
+            let isComplete = false;
+            
+            if (selectedProfession && experienceYears) {
+                // Check if special text fields are required and filled
+                if (selectedProfession.value === 'Other mental health professional') {
+                    const specifyField = document.getElementById('mental-health-specify').value.trim();
+                    isComplete = specifyField.length > 0;
+                } else if (selectedProfession.value === 'Other') {
+                    const specifyField = document.getElementById('other-specify').value.trim();
+                    isComplete = specifyField.length > 0;
+                } else {
+                    isComplete = true;
+                }
+            }
+            
+            // Enable/disable buttons
+            const submitBtn = document.getElementById('submitBtn');
+            const csvBtn = document.getElementById('downloadCsvBtn');
+            const jsonBtn = document.getElementById('downloadJsonBtn');
+            
+            if (isComplete) {
+                submitBtn.disabled = false;
+                submitBtn.style.background = '#28a745';
+                csvBtn.disabled = false;
+                csvBtn.style.background = '#6c757d';
+                jsonBtn.disabled = false;
+                jsonBtn.style.background = '#6c757d';
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.style.background = '#ccc';
+                csvBtn.disabled = true;
+                csvBtn.style.background = '#ccc';
+                jsonBtn.disabled = true;
+                jsonBtn.style.background = '#ccc';
+            }
+        }
+        
+        async function submitDataAndDownload() {
+            // First submit to Google Sheets
+            await submitToGoogleSheets();
+            
+            // Then trigger downloads
+            setTimeout(() => {
+                downloadCSV();
+            }, 1000);
+        }
+        
+        function getProfessionalBackground() {
+            const selectedProfession = document.querySelector('input[name="profession"]:checked');
+            const experienceYears = document.getElementById('experience-years').value;
+            
+            let profession = selectedProfession ? selectedProfession.value : '';
+            
+            // Add specification for "other" options
+            if (profession === 'Other mental health professional') {
+                const specify = document.getElementById('mental-health-specify').value.trim();
+                profession += specify ? `: ${specify}` : '';
+            } else if (profession === 'Other') {
+                const specify = document.getElementById('other-specify').value.trim();
+                profession += specify ? `: ${specify}` : '';
+            }
+            
+            return {
+                profession: profession,
+                experience_years: experienceYears
+            };
+        }
+        
+        function previousConstruct() {
+            if (currentConstruct > 0) {
+                showConstruct(currentConstruct - 1);
+            }
+        }
+        
+        function nextConstruct() {
+            if (currentConstruct < constructs.length - 1) {
+                showConstruct(currentConstruct + 1);
+            }
+        }
+        
+        // Google Sheets configuration
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwcgG1dlgUZh0iJ9tCTjgTG6pej9ATju14Gc0f8TWc5qqsilxlmzbAMQ6qkF03adWdkQ/exec'; // Replace with your deployed script URL
+        
+        async function submitToGoogleSheets() {
+            const professionalBackground = getProfessionalBackground();
+            
+            const submissionData = {
+                timestamp: new Date().toISOString(),
+                responses: responses,
+                feedback: feedback,
+                items: surveyData,
+                professional_background: professionalBackground
+            };
+            
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(submissionData)
+                });
+                
+                // Show success message
+                showSubmissionStatus(true);
+                
+            } catch (error) {
+                console.error('Error submitting to Google Sheets:', error);
+                showSubmissionStatus(false);
+            }
+        }
+        
+        function showSubmissionStatus(success) {
+            const statusDiv = document.createElement('div');
+            statusDiv.style.cssText = `
+                position: fixed; top: 20px; right: 20px; padding: 15px 25px;
+                border-radius: 8px; color: white; font-weight: bold; z-index: 1000;
+                ${success ? 'background: #28a745;' : 'background: #dc3545;'}
+            `;
+            statusDiv.textContent = success ? 
+                '✅ Data submitted successfully!' : 
+                '❌ Submission failed. Please download backup files.';
+            
+            document.body.appendChild(statusDiv);
+            
+            setTimeout(() => {
+                document.body.removeChild(statusDiv);
+            }, 5000);
+        }
+        
+        function downloadCSV() {
+            const professionalBackground = getProfessionalBackground();
+            const csvData = [];
+            const headers = ['construct', 'item_id', 'item_text', 'questionnaire', 'original_category', 'assigned_category', 'confidence', 'expert_profession', 'expert_experience_years', 'construct_feedback'];
+            csvData.push(headers.join(','));
+            
+            constructs.forEach(construct => {
+                const data = surveyData[construct];
+                if (!data || !data.items) return;
+                
+                const constructFeedback = feedback[construct] || '';
+                
+                data.items.forEach((item, index) => {
+                    const itemId = `${construct}_${index}`;
+                    const response = responses[itemId] || {};
+                    
+                    const row = [
+                        construct,
+                        item.id || '',
+                        `"${(item.text || '').replace(/"/g, '""')}"`,
+                        item.questionnaire || '',
+                        item.originalCategory || '',
+                        response.category || '',
+                        response.confidence !== undefined ? response.confidence : '',
+                        `"${professionalBackground.profession.replace(/"/g, '""')}"`,
+                        professionalBackground.experience_years || '',
+                        `"${constructFeedback.replace(/"/g, '""')}"`
+                    ];
+                    csvData.push(row.join(','));
+                });
+            });
+            
+            downloadFile(csvData.join('\n'), 'construct_mapping_results.csv', 'text/csv');
+        }
+        
+        function downloadJSON() {
+            const professionalBackground = getProfessionalBackground();
+            const jsonData = {
+                metadata: {
+                    timestamp: new Date().toISOString(),
+                    totalItems: Object.keys(responses).length,
+                    constructs: constructs,
+                    expert_profession: professionalBackground.profession,
+                    expert_experience_years: professionalBackground.experience_years
+                },
+                responses: responses,
+                feedback: feedback,
+                items: surveyData,
+                professional_background: professionalBackground
+            };
+            
+            downloadFile(JSON.stringify(jsonData, null, 2), 'construct_mapping_results.json', 'application/json');
+        }
+        
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Initialize the survey when the page loads
+        document.addEventListener('DOMContentLoaded', loadSurveyData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+# GitHub Actions workflow for deploying to GitHub Pages
+name: Deploy Survey to GitHub Pages
+
+# Trigger the workflow
+on:
+  # Deploy when pushing to main branch
+  push:
+    branches: [ main ]
+  
+  # Allow manual deployment from Actions tab
+  workflow_dispatch:
+
+# Set permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Ensure only one deployment runs at a time
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build and deploy job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    # Optional: Validate CSV file
+    - name: Validate CSV file
+      run: |
+        if [ -f "code/similarity-analysis/similarity-analysis-input_without-sleep.csv" ]; then
+          echo "✅ CSV file found"
+          echo "File size: $(wc -c < survey/questionnaire_modelevaluationinput_Sheet1.csv) bytes"
+          echo "Number of lines: $(wc -l < survey/questionnaire_modelevaluationinput_Sheet1.csv)"
+        else
+          echo "❌ CSV file not found in survey/ folder!"
+          exit 1
+        fi
+    
+    # Optional: Validate HTML file
+    - name: Validate HTML file
+      run: |
+        if [ -f "survey/index.html" ]; then
+          echo "✅ HTML file found"
+          # Check if Google Apps Script URL is configured
+          if grep -q "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE" survey/index.html; then
+            echo "⚠️  Warning: Google Apps Script URL not configured yet"
+            echo "Remember to replace YOUR_GOOGLE_APPS_SCRIPT_URL_HERE with your actual URL"
+          else
+            echo "✅ Google Apps Script URL appears to be configured"
+          fi
+        else
+          echo "❌ HTML file not found in survey/ folder!"
+          exit 1
+        fi
+    
+    # Setup GitHub Pages
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+    
+    # Upload the survey folder as Pages artifact
+    - name: Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        # Upload only the survey folder
+        path: './survey'
+    
+    # Deploy to GitHub Pages
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+    
+    # Post-deployment notification
+    - name: Deployment Success
+      run: |
+        echo "🚀 Survey successfully deployed!"
+        echo "📊 Your survey is now available at: ${{ steps.deployment.outputs.page_url }}"
+        echo "📝 Next steps:"
+        echo "   1. Test the survey functionality"
+        echo "   2. Verify Google Sheets integration"
+        echo "   3. Share the URL with your experts"

@@ -1,0 +1,8 @@
+sentence-transformers     4.1.0
+torch                     2.7.0
+pandas                    2.2.3
+numpy                     2.2.6
+huggingface-hub           0.32.2
+seaborn                   0.13.2
+matplotlib                3.10.3
+nbstripout                0.8.1
