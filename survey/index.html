@@ -449,15 +449,27 @@
             
             <div style="text-align: center;">
                 <p style="margin: 20px 0; color: #666; font-size: 14px;">
-                    Your responses will be automatically submitted. Download buttons below are for your records.
+                    Your responses will be automatically submitted when you click the button below.
                 </p>
-                <button class="download-btn" onclick="submitDataAndDownload()" id="submitBtn" disabled style="background: #ccc; font-size: 18px; padding: 15px 30px;">
-                    📤 Submit & Download Results
+                
+                <!-- Test button for debugging -->
+                <button class="download-btn" onclick="testButton()" style="background: #007bff; font-size: 14px; padding: 8px 16px; margin-bottom: 10px;">
+                    🧪 Test Button (Debug)
                 </button>
-                <div style="margin-top: 15px;">
-                    <button class="download-btn" onclick="downloadCSV()" id="downloadCsvBtn" disabled style="background: #6c757d; font-size: 14px; padding: 10px 20px;">📊 Download CSV Only</button>
-                    <button class="download-btn" onclick="downloadJSON()" id="downloadJsonBtn" disabled style="background: #6c757d; font-size: 14px; padding: 10px 20px;">📋 Download JSON Only</button>
-                </div>
+                <br>
+                
+                <button class="download-btn" onclick="submitData(); console.log('Button onclick fired');" id="submitBtn" disabled style="background: #ccc; font-size: 18px; padding: 15px 30px;">
+                    📤 Submit Survey Responses
+                </button>
+                
+                <!-- Optional backup downloads - smaller and less prominent -->
+                <details style="margin-top: 20px;">
+                    <summary style="cursor: pointer; color: #666; font-size: 14px;">📄 Optional: Download backup copies</summary>
+                    <div style="margin-top: 15px;">
+                        <button class="download-btn" onclick="downloadCSV()" id="downloadCsvBtn" disabled style="background: #6c757d; font-size: 12px; padding: 8px 16px;">CSV</button>
+                        <button class="download-btn" onclick="downloadJSON()" id="downloadJsonBtn" disabled style="background: #6c757d; font-size: 12px; padding: 8px 16px;">JSON</button>
+                    </div>
+                </details>
             </div>
         </div>
     </div>
@@ -918,31 +930,46 @@
             document.getElementById('progressFill').style.width = percentage + '%';
             document.getElementById('progressText').textContent = `${completedItems} of ${totalItems} items completed`;
             
-            // Show download section if all completed
-            if (completedItems === totalItems && totalItems > 0) {
-                document.getElementById('downloadSection').style.display = 'block';
-            }
+            // DO NOT automatically show download section when all completed
+            // Users must click "Finish Survey" to proceed to professional background
+            console.log(`Progress: ${completedItems}/${totalItems} items completed (${percentage.toFixed(1)}%)`);
         }
         
         function updateNavigationButtons() {
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
             
+            if (!prevBtn || !nextBtn) {
+                console.log('Navigation buttons not found');
+                return;
+            }
+            
+            console.log('Updating navigation buttons. Current construct:', currentConstruct, 'Total constructs:', constructs.length);
+            
             prevBtn.disabled = currentConstruct === 0;
-            nextBtn.disabled = currentConstruct === constructs.length - 1;
+            nextBtn.disabled = false; // Never disable next button - let users navigate
             
             // Update button text for last page
             if (currentConstruct === constructs.length - 1) {
                 nextBtn.textContent = 'Finish Survey';
-                nextBtn.onclick = () => finishSurvey();
+                nextBtn.onclick = () => {
+                    console.log('Finish Survey button clicked');
+                    finishSurvey();
+                };
+                console.log('Set button to "Finish Survey" mode');
             } else {
                 nextBtn.textContent = 'Next →';
                 nextBtn.onclick = () => nextConstruct();
+                console.log('Set button to "Next" mode');
             }
+            
+            console.log('Navigation buttons updated. Next button disabled:', nextBtn.disabled);
         }
         
         function finishSurvey() {
-            // Hide navigation and show download section
+            console.log('finishSurvey() called - User clicked Finish Survey button');
+            
+            // Hide navigation and construct pages
             document.getElementById('navigationButtons').style.display = 'none';
             document.querySelectorAll('#constructPages .construct-page').forEach(page => {
                 page.classList.remove('active');
@@ -950,25 +977,91 @@
             document.querySelectorAll('.construct-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
+            
+            // NOW show the download section with professional background
+            console.log('Showing professional background form');
             document.getElementById('downloadSection').style.display = 'block';
             
+            console.log('About to setup professional background listeners...');
             // Add event listeners for professional background form
             setupProfessionalBackgroundListeners();
+            
+            // Also do an initial form check
+            setTimeout(() => {
+                console.log('Running initial form completion check...');
+                checkFormCompletion();
+            }, 100);
         }
         
         function setupProfessionalBackgroundListeners() {
+            console.log('Setting up professional background listeners...');
+            
+            // Remove existing listeners first to avoid duplicates
+            const existingListeners = document.querySelectorAll('[data-listener-added]');
+            existingListeners.forEach(el => el.removeAttribute('data-listener-added'));
+            
             // Listen for profession selection changes
             document.querySelectorAll('input[name="profession"]').forEach(radio => {
-                radio.addEventListener('change', checkFormCompletion);
+                if (!radio.hasAttribute('data-listener-added')) {
+                    radio.addEventListener('change', () => {
+                        console.log('Profession changed to:', radio.value);
+                        checkFormCompletion();
+                    });
+                    radio.setAttribute('data-listener-added', 'true');
+                }
             });
             
             // Listen for experience years input
-            document.getElementById('experience-years').addEventListener('input', checkFormCompletion);
+            const experienceInput = document.getElementById('experience-years');
+            if (experienceInput && !experienceInput.hasAttribute('data-listener-added')) {
+                experienceInput.addEventListener('input', () => {
+                    console.log('Experience years changed to:', experienceInput.value);
+                    checkFormCompletion();
+                });
+                experienceInput.setAttribute('data-listener-added', 'true');
+            }
             
             // Listen for text field changes
-            document.getElementById('mental-health-specify').addEventListener('input', checkFormCompletion);
-            document.getElementById('other-specify').addEventListener('input', checkFormCompletion);
+            const mentalHealthSpecify = document.getElementById('mental-health-specify');
+            const otherSpecify = document.getElementById('other-specify');
+            
+            if (mentalHealthSpecify && !mentalHealthSpecify.hasAttribute('data-listener-added')) {
+                mentalHealthSpecify.addEventListener('input', checkFormCompletion);
+                mentalHealthSpecify.setAttribute('data-listener-added', 'true');
+            }
+            if (otherSpecify && !otherSpecify.hasAttribute('data-listener-added')) {
+                otherSpecify.addEventListener('input', checkFormCompletion);
+                otherSpecify.setAttribute('data-listener-added', 'true');
+            }
+            
+            console.log('Professional background listeners set up complete');
+            
+            // Run initial check
+            checkFormCompletion();
         }
+        
+        // Also set up listeners when download section becomes visible
+        function initializeDownloadSectionListeners() {
+            const downloadSection = document.getElementById('downloadSection');
+            if (downloadSection && downloadSection.style.display === 'block') {
+                setupProfessionalBackgroundListeners();
+            }
+        }
+        
+        // Call this periodically to ensure listeners are set up
+        setInterval(() => {
+            const downloadSection = document.getElementById('downloadSection');
+            if (downloadSection && downloadSection.style.display === 'block') {
+                const professionRadios = document.querySelectorAll('input[name="profession"]');
+                const hasListeners = Array.from(professionRadios).some(radio => 
+                    radio.hasAttribute('data-listener-added')
+                );
+                if (!hasListeners) {
+                    console.log('Download section visible but no listeners found, setting up...');
+                    setupProfessionalBackgroundListeners();
+                }
+            }
+        }, 1000);
         
         function toggleSpecifyField(fieldId, isEnabled) {
             const field = document.getElementById(fieldId);
@@ -980,8 +1073,12 @@
         }
         
         function checkFormCompletion() {
+            console.log('Checking form completion...');
             const selectedProfession = document.querySelector('input[name="profession"]:checked');
             const experienceYears = document.getElementById('experience-years').value;
+            
+            console.log('Selected profession:', selectedProfession?.value);
+            console.log('Experience years:', experienceYears);
             
             let isComplete = false;
             
@@ -990,13 +1087,17 @@
                 if (selectedProfession.value === 'Other mental health professional') {
                     const specifyField = document.getElementById('mental-health-specify').value.trim();
                     isComplete = specifyField.length > 0;
+                    console.log('Mental health specify field:', specifyField);
                 } else if (selectedProfession.value === 'Other') {
                     const specifyField = document.getElementById('other-specify').value.trim();
                     isComplete = specifyField.length > 0;
+                    console.log('Other specify field:', specifyField);
                 } else {
                     isComplete = true;
                 }
             }
+            
+            console.log('Form is complete:', isComplete);
             
             // Enable/disable buttons
             const submitBtn = document.getElementById('submitBtn');
@@ -1010,6 +1111,7 @@
                 csvBtn.style.background = '#6c757d';
                 jsonBtn.disabled = false;
                 jsonBtn.style.background = '#6c757d';
+                console.log('Buttons enabled');
             } else {
                 submitBtn.disabled = true;
                 submitBtn.style.background = '#ccc';
@@ -1017,14 +1119,68 @@
                 csvBtn.style.background = '#ccc';
                 jsonBtn.disabled = true;
                 jsonBtn.style.background = '#ccc';
+                console.log('Buttons disabled');
+            }
+        }
+        
+        // Test function to verify button works
+        function testButton() {
+            console.log('TEST: Button is clickable and JavaScript is working');
+            alert('Button test successful! JavaScript is working.');
+        }
+        
+        async function submitData() {
+            try {
+                console.log('=== SUBMIT FUNCTION CALLED ===');
+                console.log('Submit button clicked - submitting to Google Sheets only');
+                console.log('Responses:', Object.keys(responses).length, 'items');
+                console.log('Constructs:', constructs);
+                console.log('Feedback:', feedback);
+                
+                // Show loading state
+                const submitBtn = document.getElementById('submitBtn');
+                if (!submitBtn) {
+                    console.error('Submit button not found!');
+                    return;
+                }
+                
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = '📤 Submitting...';
+                submitBtn.disabled = true;
+                
+                console.log('About to call submitToGoogleSheets...');
+                
+                // Submit to Google Sheets
+                await submitToGoogleSheets();
+                
+                // Show success message
+                submitBtn.textContent = '✅ Successfully Submitted!';
+                submitBtn.style.background = '#28a745';
+                
+                // Show completion message
+                setTimeout(() => {
+                    alert('Thank you! Your survey responses have been successfully submitted.');
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error in submitData:', error);
+                console.error('Error stack:', error.stack);
+                
+                // Reset button and show error
+                const submitBtn = document.getElementById('submitBtn');
+                if (submitBtn) {
+                    submitBtn.textContent = '❌ Submission Failed - Retry';
+                    submitBtn.style.background = '#dc3545';
+                    submitBtn.disabled = false;
+                }
+                
+                alert('Submission failed: ' + error.message + '\nPlease try again or use the backup download options below.');
             }
         }
         
         async function submitDataAndDownload() {
-            // First submit to Google Sheets
-            await submitToGoogleSheets();
-            
-            // Then trigger downloads
+            // Legacy function - just calls submit and download
+            await submitData();
             setTimeout(() => {
                 downloadCSV();
             }, 1000);
@@ -1064,7 +1220,7 @@
         }
         
         // Google Sheets configuration
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwcgG1dlgUZh0iJ9tCTjgTG6pej9ATju14Gc0f8TWc5qqsilxlmzbAMQ6qkF03adWdkQ/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwbWz-FmPKJnBmZHddQYs8G11DTQ444j0tn1ZaXaD4DqOWsXopxuz9RndpL7Nd1WP96gg/exec';
         
         async function submitToGoogleSheets() {
             const professionalBackground = getProfessionalBackground();
@@ -1115,69 +1271,108 @@
         }
         
         function downloadCSV() {
-            const professionalBackground = getProfessionalBackground();
-            const csvData = [];
-            const headers = ['construct', 'item_id', 'item_text', 'questionnaire', 'original_category', 'assigned_category', 'confidence', 'expert_profession', 'expert_experience_years', 'construct_feedback'];
-            csvData.push(headers.join(','));
-            
-            constructs.forEach(construct => {
-                const data = surveyData[construct];
-                if (!data || !data.items) return;
+            try {
+                console.log('Download CSV clicked');
+                console.log('Constructs available:', constructs);
+                console.log('Responses count:', Object.keys(responses).length);
                 
-                const constructFeedback = feedback[construct] || '';
+                const professionalBackground = getProfessionalBackground();
+                console.log('Professional background:', professionalBackground);
                 
-                data.items.forEach((item, index) => {
-                    const itemId = `${construct}_${index}`;
-                    const response = responses[itemId] || {};
+                const csvData = [];
+                const headers = ['construct', 'item_id', 'item_text', 'questionnaire', 'original_category', 'assigned_category', 'confidence', 'expert_profession', 'expert_experience_years', 'construct_feedback'];
+                csvData.push(headers.join(','));
+                
+                let totalRows = 0;
+                
+                constructs.forEach(construct => {
+                    const data = surveyData[construct];
+                    if (!data || !data.items) {
+                        console.log('No data for construct:', construct);
+                        return;
+                    }
                     
-                    const row = [
-                        construct,
-                        item.id || '',
-                        `"${(item.text || '').replace(/"/g, '""')}"`,
-                        item.questionnaire || '',
-                        item.originalCategory || '',
-                        response.category || '',
-                        response.confidence !== undefined ? response.confidence : '',
-                        `"${professionalBackground.profession.replace(/"/g, '""')}"`,
-                        professionalBackground.experience_years || '',
-                        `"${constructFeedback.replace(/"/g, '""')}"`
-                    ];
-                    csvData.push(row.join(','));
+                    const constructFeedback = feedback[construct] || '';
+                    
+                    data.items.forEach((item, index) => {
+                        const itemId = `${construct}_${index}`;
+                        const response = responses[itemId] || {};
+                        
+                        const row = [
+                            construct,
+                            item.id || '',
+                            `"${(item.text || '').replace(/"/g, '""')}"`,
+                            item.questionnaire || '',
+                            item.originalCategory || '',
+                            response.category || '',
+                            response.confidence !== undefined ? response.confidence : '',
+                            `"${professionalBackground.profession.replace(/"/g, '""')}"`,
+                            professionalBackground.experience_years || '',
+                            `"${constructFeedback.replace(/"/g, '""')}"`
+                        ];
+                        csvData.push(row.join(','));
+                        totalRows++;
+                    });
                 });
-            });
-            
-            downloadFile(csvData.join('\n'), 'construct_mapping_results.csv', 'text/csv');
+                
+                console.log('Generated CSV with', totalRows, 'rows');
+                
+                if (totalRows === 0) {
+                    alert('No survey data to download. Please complete some survey items first.');
+                    return;
+                }
+                
+                downloadFile(csvData.join('\n'), 'construct_mapping_results.csv', 'text/csv');
+                console.log('CSV download initiated');
+            } catch (error) {
+                console.error('Error in downloadCSV:', error);
+                alert('Error creating CSV file: ' + error.message);
+            }
         }
         
         function downloadJSON() {
-            const professionalBackground = getProfessionalBackground();
-            const jsonData = {
-                metadata: {
-                    timestamp: new Date().toISOString(),
-                    totalItems: Object.keys(responses).length,
-                    constructs: constructs,
-                    expert_profession: professionalBackground.profession,
-                    expert_experience_years: professionalBackground.experience_years
-                },
-                responses: responses,
-                feedback: feedback,
-                items: surveyData,
-                professional_background: professionalBackground
-            };
-            
-            downloadFile(JSON.stringify(jsonData, null, 2), 'construct_mapping_results.json', 'application/json');
+            try {
+                console.log('Download JSON clicked');
+                const professionalBackground = getProfessionalBackground();
+                const jsonData = {
+                    metadata: {
+                        timestamp: new Date().toISOString(),
+                        totalItems: Object.keys(responses).length,
+                        constructs: constructs,
+                        expert_profession: professionalBackground.profession,
+                        expert_experience_years: professionalBackground.experience_years
+                    },
+                    responses: responses,
+                    feedback: feedback,
+                    items: surveyData,
+                    professional_background: professionalBackground
+                };
+                
+                downloadFile(JSON.stringify(jsonData, null, 2), 'construct_mapping_results.json', 'application/json');
+                console.log('JSON download initiated');
+            } catch (error) {
+                console.error('Error in downloadJSON:', error);
+                alert('Error creating JSON file: ' + error.message);
+            }
         }
         
         function downloadFile(content, filename, contentType) {
-            const blob = new Blob([content], { type: contentType });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            try {
+                console.log('Creating download for:', filename, 'Content length:', content.length);
+                const blob = new Blob([content], { type: contentType });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                console.log('File download completed');
+            } catch (error) {
+                console.error('Error in downloadFile:', error);
+                alert('Error downloading file: ' + error.message);
+            }
         }
         
         // Initialize the survey when the page loads
