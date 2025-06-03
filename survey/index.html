@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Construct Item Mapping Survey</title>
+    <title>ENIGMA-PD Neuropsychiatry Project: Item Mapping Survey</title>
     <style>
         * {
             margin: 0;
@@ -366,9 +366,9 @@
                 <h2 class="construct-title">Instructions</h2>
             </div>
             <div style="padding: 30px; line-height: 1.8; font-size: 16px;">
-                <p>On the following pages you will be presented by items from multiple mental health questionnaires. The items are pre-sorted by mental health construct (e.g., depression, anxiety, psychosis etc.). We also pre-selected construct dimensions based on clinical criteria and/or the theoretical basis of the questionnaires (e.g., for depression you will find dimensions like depressed mood, anhedonia, feelings of guilt etc.).</p>
+                <p>On the following pages you will be presented by items from multiple mental health questionnaires. The items are pre-sorted by their corresponding mental health construct (e.g., depression, anxiety, psychosis etc.). We also pre-selected construct dimensions based on clinical criteria and/or the theoretical basis of the questionnaires (e.g., for depression you will find dimensions like depressed mood, anhedonia, feelings of guilt etc.).</p>
                 <p>Your task will be to <strong>select the radio button</strong> for the dimension you think each item belongs to, and rate your confidence in that choice on a scale from 0 (not confident) to 4 (very confident).</p>
-                <p>Please make sure to go through all constructs by clicking on "Next" at the end of each page until you reach the End screen of this form.</p>
+                <p>Please make sure to go through all constructs by clicking on "Next" at the end of each page until you reach the End screen of this form. This survey is configured that you cannot submit your response if you haven't answered all items or chose the "skip" option at the beginning of each page.</p>
                 <p><strong>Thank you!</strong></p>
                 <div style="text-align: center; margin-top: 40px;">
                     <button class="btn btn-primary" onclick="startSurvey()" style="font-size: 18px; padding: 15px 30px;">Start Survey</button>
@@ -388,7 +388,7 @@
         <div class="download-section" id="downloadSection" style="display: none;">
             <div class="completion-message">
                 <h2>🎉 Survey Completed!</h2>
-                <p>Thank you for completing all construct mappings. Please provide some information about your professional background before downloading your responses.</p>
+                <p>Thank you for completing all construct mappings. Please provide some information about your professional background before submitting your responses.</p>
             </div>
             
             <!-- Professional Background Form -->
@@ -445,18 +445,20 @@
                     <label for="experience-years" style="display: block; font-weight: 600; margin-bottom: 10px; color: #555;">How many years is your professional experience?</label>
                     <input type="number" id="experience-years" min="0" max="60" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100px; font-size: 16px;">
                 </div>
+
+                 <div style="margin-bottom: 25px;">
+                    <label for="expert-email" style="display: block; font-weight: 600; margin-bottom: 10px; color: #555;">Email address:</label>
+                    <input type="email" id="expert-email" placeholder="your.email@example.com" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 300px; font-size: 16px;" required>
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">We may contact you for follow-up research or to share the results with you. Your email and person will not be made public in any way and your responses cannot be linked back to you by any other than the investigators in this project.</p>
+                </div>
+
             </div>
             
             <div style="text-align: center;">
                 <p style="margin: 20px 0; color: #666; font-size: 14px;">
-                    Your responses will be automatically submitted when you click the button below.
+                    Your responses will be automatically submitted when you click the button below. This might take a while, please stay on this page until you see the "Successfully submitted" message.
                 </p>
-                
-                <!-- Test button for debugging -->
-                <button class="download-btn" onclick="testButton()" style="background: #007bff; font-size: 14px; padding: 8px 16px; margin-bottom: 10px;">
-                    🧪 Test Button (Debug)
-                </button>
-                <br>
+    
                 
                 <button class="download-btn" onclick="submitData(); console.log('Button onclick fired');" id="submitBtn" disabled style="background: #ccc; font-size: 18px; padding: 15px 30px;">
                     📤 Submit Survey Responses
@@ -473,6 +475,16 @@
             </div>
         </div>
     </div>
+
+        <!-- Footer -->
+    <footer style="background: #f8f9fa; border-top: 1px solid #dee2e6; padding: 20px 0; margin-top: 40px; text-align: center;">
+        <div class="container">
+            <p style="margin: 0; color: #666; font-size: 14px;">
+                If you have any questions or feedback, please reach out to 
+                <a href="mailto:juliakatharina.pfarr@gmail.com" style="color: #8BC34A; text-decoration: none; font-weight: 500;">Julia-Katharina Pfarr.</a>
+            </p>
+        </div>
+    </footer>
 
     <script>
         // Global variables
@@ -837,7 +849,7 @@
                 tableHTML += `
                     <div style="background: #f8f9fa; border-top: 3px solid #8BC34A; padding: 25px; margin-top: 30px;">
                         <h4 style="color: #333; margin-bottom: 15px; font-size: 16px;">💬 Optional Feedback</h4>
-                        <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Do you want to provide some feedback on this section? This could be anything, such as thoughts on the dimensions or additional considerations for us to take into account.</p>
+                        <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Do you want to provide some feedback on this section? This could be anything, such as thoughts on the dimensions, construct, questionnaire or additional considerations for us to take into account.</p>
                         <textarea id="feedback_${construct}" 
                                   placeholder="Share your thoughts about the ${construct} construct dimensions, items, or any other considerations..."
                                   style="width: 100%; min-height: 100px; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 14px; resize: vertical;"
