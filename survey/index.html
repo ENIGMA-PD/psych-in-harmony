@@ -442,7 +442,7 @@
         // Load actual data from uploaded file
         async function loadSurveyData() {
             try {
-                const response = await fetch('https://github.com/ENIGMA-PD/psych-in-harmony/blob/main/code/similarity-analysis/similarity-analysis-input_without-sleep.csv');
+                const response = await fetch('https://raw.githubusercontent.com/ENIGMA-PD/psych-in-harmony/main/code/similarity-analysis/similarity-analysis-input_without-sleep.csv');
         
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
